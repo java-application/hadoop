@@ -1,0 +1,66 @@
+name: Build, Tag, and Package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+          
+          # Install requirements
+          - name: Install Requirements
+            run: chmod +x install_requirements.sh && ./install_requirements.sh /path/to/prefix
+
+
+
+
+          # Set up JDK
+          - name: Set up JDK
+            uses: actions/setup-java@v2
+            with:
+              distribution: 'adopt'
+              java-version: '11'
+
+      - name: Source environment variables
+        run: source source.me
+
+      # Source environment variables
+      - name: Source environment variables
+        run: source source.me
+
+      # Dependabot Alert CSV Export
+      - name: Dependabot Alert CSV Export
+        uses: java-application/dependabot-alert-export@main
+        with:
+          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
+          org_name: 'java-application'
+          repo_name: 'hadoop'
+          csv_path: 'data/vulnerability.csv'
+
+      # Upload Vulnerability report
+      - name: Upload Vulnerability report
+
+      - name: Generate next tag number
+        run: echo "REV=$(($(git tag | sort -V | tail -n 1 | cut -d'r' -f2) + 1))" >> $GITHUB_ENV
+
+      - name: Build with Maven
+        run: mvn clean package install -Dversion-info.scm.commit=${{ env.REV }} -Pdist,native -DskipTests -Dtar -Dmaven.javadoc.skip=true
+
+      - name: Add git tag
+        run: git tag r${{ env.REV }}
+
+      - name: Push git tag
+        run: git push --tags
+
+      - name: Rename and upload YARN package
+        run: mv hadoop-yarn-target/hadoop-yarn-2.7.1.jar hadoop-yarn-2.7.1-r${{ env.REV }}-arch-$(uname -m).jar
+        uses: actions/upload-artifact@v2
+        with:
+          name: hadoop-yarn-2.7.1-r${{ env.REV }}-arch-$(uname -m).jar
+          path: hadoop-yarn-target/hadoop-yarn-2.7.1-r${{ env.REV }}-arch-$(uname -m).jar
