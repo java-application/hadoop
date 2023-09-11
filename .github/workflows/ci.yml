@@ -15,7 +15,7 @@ jobs:
 
       # Install requirements
       - name: Install Requirements
-        run: chmod +x install_requirements.sh && ./install_requirements.sh /path/to/prefix
+        run: chmod +x install_requirements.sh && ./install_requirements.sh /home/runner/work/_temp/_github_home
 
       # Set up JDK
       - name: Set up JDK
