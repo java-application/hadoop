@@ -12,25 +12,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-          
-          # Install requirements
-          - name: Install Requirements
-            run: chmod +x install_requirements.sh && ./install_requirements.sh /path/to/prefix
 
+      # Install requirements
+      - name: Install Requirements
+        run: chmod +x install_requirements.sh && ./install_requirements.sh /path/to/prefix
 
+      # Set up JDK
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
 
-
-          # Set up JDK
-          - name: Set up JDK
-            uses: actions/setup-java@v2
-            with:
-              distribution: 'adopt'
-              java-version: '11'
-
-      - name: Source environment variables
-        run: source source.me
-
-      # Source environment variables
       - name: Source environment variables
         run: source source.me
 
@@ -45,6 +38,10 @@ jobs:
 
       # Upload Vulnerability report
       - name: Upload Vulnerability report
+        uses: actions/upload-artifact@v2
+        with:
+          name: vulnerability_report
+          path: data/vulnerability.csv
 
       - name: Generate next tag number
         run: echo "REV=$(($(git tag | sort -V | tail -n 1 | cut -d'r' -f2) + 1))" >> $GITHUB_ENV
@@ -60,7 +57,8 @@ jobs:
 
       - name: Rename and upload YARN package
         run: mv hadoop-yarn-target/hadoop-yarn-2.7.1.jar hadoop-yarn-2.7.1-r${{ env.REV }}-arch-$(uname -m).jar
+      - name: Upload YARN package
         uses: actions/upload-artifact@v2
         with:
-          name: hadoop-yarn-2.7.1-r${{ env.REV }}-arch-$(uname -m).jar
+          name: hadoop-yarn-package
           path: hadoop-yarn-target/hadoop-yarn-2.7.1-r${{ env.REV }}-arch-$(uname -m).jar
